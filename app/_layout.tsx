@@ -1,39 +1,39 @@
-import { DarkTheme, DefaultTheme, ThemeProvider } from '@react-navigation/native';
-import { useFonts } from 'expo-font';
-import { Stack } from 'expo-router';
-import * as SplashScreen from 'expo-splash-screen';
-import { StatusBar } from 'expo-status-bar';
-import { useEffect } from 'react';
-import 'react-native-reanimated';
+import React from 'react';
+import { Provider } from 'react-redux';
+import { NavigationContainer } from '@react-navigation/native';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
+import { store } from './redux/store';
+import HomeScreen from './screens/HomeScreen';
+import AddEditScreen from './screens/AddEditScreen';
+import { XeMay } from './models/XeMay'; // Import XeMay type
 
-import { useColorScheme } from '@/hooks/useColorScheme';
+// Define the param list for the stack navigator
+type RootStackParamList = {
+  Home: undefined;
+  AddEdit: { xeMay?: XeMay };
+};
 
-// Prevent the splash screen from auto-hiding before asset loading is complete.
-SplashScreen.preventAutoHideAsync();
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
-export default function RootLayout() {
-  const colorScheme = useColorScheme();
-  const [loaded] = useFonts({
-    SpaceMono: require('../assets/fonts/SpaceMono-Regular.ttf'),
-  });
-
-  useEffect(() => {
-    if (loaded) {
-      SplashScreen.hideAsync();
-    }
-  }, [loaded]);
-
-  if (!loaded) {
-    return null;
-  }
-
+const App = () => {
   return (
-    <ThemeProvider value={colorScheme === 'dark' ? DarkTheme : DefaultTheme}>
-      <Stack>
-        <Stack.Screen name="(tabs)" options={{ headerShown: false }} />
-        <Stack.Screen name="+not-found" />
-      </Stack>
-      <StatusBar style="auto" />
-    </ThemeProvider>
+    <Provider store={store}>
+        <Stack.Navigator initialRouteName="Home">
+          <Stack.Screen
+            name="Home"
+            component={HomeScreen}
+            options={{ title: 'Danh sách xe máy' }}
+          />
+          <Stack.Screen
+            name="AddEdit"
+            component={AddEditScreen}
+            options={({ route }) => ({
+              title: route.params?.xeMay ? 'Sửa xe' : 'Thêm xe',
+            })}
+          />
+        </Stack.Navigator>
+    </Provider>
   );
-}
+};
+
+export default App;
